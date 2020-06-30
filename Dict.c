@@ -16,6 +16,7 @@ typedef struct _DictNode {
     WFreq data;
     Link left;
     Link right;
+    int height;
 } DictNode;
 
 struct _DictRep {
@@ -25,6 +26,11 @@ struct _DictRep {
 // define functions
 Link Insert(Link n, Link newNode);
 void recShow(Link node, int space);
+int height(Link n);
+int max(int a, int b);
+Link rotateLeft(Link n);
+Link rotateRight(Link n);
+
 // create new empty Dictionary
 Dict newDict() {
     // TODO
@@ -44,6 +50,7 @@ WFreq *DictInsert(Dict d, char *w) {
     newNode->left = NULL;
     newNode->right = NULL;
     newNode->data = newWord;
+    newNode->height = 0;
 
     d->tree = Insert(d->tree, newNode);
 }
@@ -52,7 +59,6 @@ Link Insert(Link n, Link newNode) {
     if (n == NULL) {
         return newNode;
     }
-
     // insert recursively
     int cmp = strcmp(n->data.word, newNode->data.word);
     if (cmp < 0) {
@@ -63,6 +69,30 @@ Link Insert(Link n, Link newNode) {
         return n;
     }
 
+    // insertion done, correct height
+    // referenced from lecture slides
+    n->height = 1 + max(height(n->left), height(n->right));
+
+    // rebalance the tree
+    // referenced from 
+    // https://www.cs.swarthmore.edu/~brody/cs35/f14/Labs/extras/08/avl_pseudo.pdf
+    int LHeight = height(n->left);
+    int RHeight = height(n->right);
+    if ((LHeight - RHeight) > 1) {
+        if (n->left != NULL) {
+            if (height(n->left->left) < height(n->left->right)) {
+                n->left = rotateLeft(n->left);
+            }
+            n = rotateRight(n);
+        }
+    } else if ((RHeight - LHeight) > 1) {
+        if (n->right != NULL) {
+            if (height(n->right->left) < height(n->right->right)) {
+                n->right = rotateRight(n->right);
+            }
+            n = rotateLeft(n);
+        }
+    }
     return n;
 }
 
@@ -89,6 +119,7 @@ void showDict(Dict d) {
     return;
 }
 
+// referenced from https://www.geeksforgeeks.org/print-binary-tree-2-dimensions/
 void recShow(Link node, int space) {
     // Base case
     if (node == NULL)
@@ -105,8 +136,58 @@ void recShow(Link node, int space) {
     printf("\n");
     for (int i = 10; i < space; i++)
         printf(" ");
-    printf("%s\n", node->data.word);
+    printf("%s, %d, %d\n", node->data.word, node->height, height(node->left) - height(node->right));
 
     // Process left child
     recShow(node->left, space);
+}
+
+// Returns  the height of a subtree while assuming that the height field
+// of the root node of the subtree is correct
+int height(Link n) {
+    if (n == NULL) {
+        return -1;
+    } else {
+        return n->height;
+    }
+}
+
+int max(int a, int b) {
+    return a > b ? a : b;
+}
+
+// rotate left/right
+// referenced from lecture slides
+Link rotateLeft(Link n) {
+    if (n == NULL || n->right == NULL) {
+        return n;
+    } else {
+        Link x = n->right;
+        Link temp = x->left;
+        x->left = n;
+        n->right = temp;
+
+        // update heights
+        n->height = 1 + max(height(n->left), height(n->right));
+        x->height = 1 + max(height(x->left), height(x->right));
+
+        return x;
+    }
+}
+
+Link rotateRight(Link n) {
+    if (n == NULL || n->left == NULL) {  //empty or has nothing to rotate to the right
+        return n;
+    } else {
+        Link x = n->left;
+        Link temp = x->right;
+        x->right = n;
+        n->left = temp;
+
+        // update heights
+        n->height = 1 + max(height(n->left), height(n->right));  // must update n first bc n is subtree of x now
+        x->height = 1 + max(height(x->left), height(x->right));
+
+        return x;
+    }
 }

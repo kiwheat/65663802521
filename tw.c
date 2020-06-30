@@ -61,18 +61,14 @@ int main( int argc, char *argv[])
       return EXIT_FAILURE;
    }
    Dict stopwords = newDict();  // dictionary of stopwords
-   int counter = 0;
-   while (fgets(word, MAXWORD, fp) != NULL && counter < 10) {
+   while (fgets(word, MAXWORD, fp) != NULL) {
       char *string = malloc(strlen(word) + 1);
       strncpy(string, word, strlen(word) - 1);
       DictInsert(stopwords, string);
-      counter++;
    }
 
-   showDict(stopwords);
-   // TODO
-
    // scan File, up to start of text
+   
 
    // TODO
 
