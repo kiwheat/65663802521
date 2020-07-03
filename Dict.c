@@ -30,6 +30,7 @@ int height(Link n);
 int max(int a, int b);
 Link rotateLeft(Link n);
 Link rotateRight(Link n);
+Link Find(Link n, char *w);
 
 // create new empty Dictionary
 Dict newDict() {
@@ -53,6 +54,7 @@ WFreq *DictInsert(Dict d, char *w) {
     newNode->height = 0;
 
     d->tree = Insert(d->tree, newNode);
+    return &newNode->data;
 }
 
 Link Insert(Link n, Link newNode) {
@@ -72,7 +74,7 @@ Link Insert(Link n, Link newNode) {
     // insertion done, correct height
     // referenced from lecture slides
     n->height = 1 + max(height(n->left), height(n->right));
-
+    //
     // rebalance the tree
     // referenced from 
     // https://www.cs.swarthmore.edu/~brody/cs35/f14/Labs/extras/08/avl_pseudo.pdf
@@ -101,6 +103,33 @@ Link Insert(Link n, Link newNode) {
 // otherwise return NULL
 WFreq *DictFind(Dict d, char *w) {
     // TODO
+    if (d == NULL) {
+        return NULL;
+    }
+    Link temp = Find(d->tree, w);
+    if (temp == NULL) {
+        return NULL; // not found
+    } else {
+        return &temp->data;
+    }
+    
+}
+
+// recursively find w in binary tree n
+// returns node in tree or null
+Link Find(Link n, char *w) {
+    
+    if (n == NULL) {
+        return NULL;
+    }
+    int cmp = strcmp(n->data.word, w);
+    if (cmp < 0) {
+        return Find(n->left, w);
+    } else if (cmp > 0) {
+        return Find(n->right, w);
+    } else { //found!
+        return n;   // do i return n? 
+    }
     return NULL;
 }
 
