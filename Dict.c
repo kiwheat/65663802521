@@ -31,6 +31,9 @@ int max(int a, int b);
 Link rotateLeft(Link n);
 Link rotateRight(Link n);
 Link Find(Link n, char *w);
+int numOfNodes(Dict d);
+int countNodes(Link n);
+void traverseTree(Link n, WFreq *wfs, int *counter);
 
 // create new empty Dictionary
 Dict newDict() {
@@ -137,8 +140,27 @@ Link Find(Link n, char *w) {
 // input: Dictionary, array of WFreqs, size of array
 // returns: #WFreqs in array, modified array
 int findTopN(Dict d, WFreq *wfs, int n) {
-    // TODO
-    return 0;
+    // Add all items in d to wfs
+    if (d == NULL || wfs == NULL) {
+        return 0;
+    }
+    int counter = 0;
+    traverseTree(d->tree, wfs, &counter);
+    assert(counter == n);
+    return n;
+}
+
+void traverseTree(Link n, WFreq *wfs, int *counter) {
+    if (n == NULL) {
+        return;
+    }
+    // Add item in n to wfs array
+    wfs[*counter] = n->data;
+    (*counter)++;
+
+    // Recursive
+    traverseTree(n->left, wfs, counter);
+    traverseTree(n->right, wfs, counter);
 }
 
 // print a dictionary
@@ -219,4 +241,25 @@ Link rotateRight(Link n) {
 
         return x;
     }
+}
+
+// Returns number of nodes in dictionary d
+int numOfNodes(Dict d) {
+    return countNodes(d->tree);
+}
+
+// recursively count number of nodes in tree
+// From: http://www.martinbroadhurst.com/counting-nodes-in-a-binary-tree-recursively.html#:~:text=Counting%20all%20nodes,nodes%20in%20a%20binary%20tree.
+int countNodes(Link n) {
+    if (n == NULL) {
+        return 0;
+    }
+    int count = 1;
+    if (n->left != NULL) {
+        count += countNodes(n->left);
+    }
+    if (n->right != NULL) {
+        count += countNodes(n->right);
+    }
+    return count;
 }

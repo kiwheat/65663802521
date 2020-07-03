@@ -22,15 +22,11 @@
 
 #define isWordChar(c) (isalnum(c) || (c) == '\'' || (c) == '-')
 
+int numOfNodes(Dict d);
+void bubbleSort(WFreq arr[], int n);
+void swap(WFreq *xp, WFreq *yp);
+
 int main(int argc, char *argv[]) {
-    // TODO ... add any variables you need
-
-    FILE *in;  // currently open file
-
-    Dict wfreqs;     // dictionary of words from book
-    WFreq *results;  // array of top N (word,freq) pairs
-                     // (dynamically allocated)
-
     char *fileName;  // name of file containing book text
     int nWords;      // number of top frequency words to show
 
@@ -88,9 +84,9 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Not a Project Gutenberg book\n");
         return EXIT_FAILURE;
     }
-    int a = 0;
+    Dict wordDict = newDict();  // Book dictionary
     // scan File reading words and accumualting counts
-    while (fgets(line, MAXLINE, txt) != NULL && a < 35) {
+    while (fgets(line, MAXLINE, txt) != NULL) {
         if (strncmp(line, ENDING, strlen(ENDING)) == 0) {  // break if reaches ENDING
             break;
         }
@@ -99,7 +95,6 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < strlen(linestring); i++) {
             linestring[i] = tolower(linestring[i]);
         }
-        a++;
         for (int i = 0; i < strlen(linestring); i++) {
             if (!isWordChar(linestring[i])) {
                 linestring[i] = ' ';
@@ -108,21 +103,54 @@ int main(int argc, char *argv[]) {
         char *token = strtok(linestring, " ");
         while (token != NULL) {
             if (strlen(token) > 1) {                       // is a valid word
-                if (DictFind(stopwords, token) == NULL) {  // doenst exist in dict
-                    printf("%s\n", token);
+                if (DictFind(stopwords, token) == NULL) {  // doenst exist in stopwords dict
+                    char *addWord = malloc(sizeof(char) * (strlen(token) + 1));
+                    strcpy(addWord, token);
+                    int k = stem(addWord, 0, strlen(addWord) - 1);
+                    addWord[k + 1] = '\0';
+                    WFreq *exist = DictFind(wordDict, addWord);
+                    if (exist == NULL) {
+                        DictInsert(wordDict, addWord);
+                    } else {
+                        assert(strcmp(exist->word, addWord) == 0);
+                        // increment WFreq freq
+                        exist->freq++;
+                        free(addWord);
+                    }
                 }
             }
-
             token = strtok(NULL, " ");
         }
+        free(linestring);
     }
 
-    // TODO
-
     // compute and display the top N words
+    int size = numOfNodes(wordDict);
+    WFreq results[size];  // array that contains all node WFreq in wordDict
+    findTopN(wordDict, results, size);
 
-    // TODO
-
-    // done
+    bubbleSort(results, size);
+    for (int i = 0; i < nWords; i++) {
+        printf("%s: %d\n", results[i].word, results[i].freq);
+    }
     return EXIT_SUCCESS;
+}
+
+// From https://www.geeksforgeeks.org/bubble-sort/
+void bubbleSort(WFreq arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        // Last i elements are already in place
+        for (int j = 0; j < n - i - 1; j++) {
+            if (arr[j].freq <= arr[j + 1].freq) {
+                swap(&arr[j], &arr[j + 1]);
+            }
+        }
+    }
+}
+
+// From https://www.geeksforgeeks.org/bubble-sort/
+void swap(WFreq *xp, WFreq *yp) {
+    WFreq temp = *xp;
+    *xp = *yp;
+    *yp = temp;
 }
