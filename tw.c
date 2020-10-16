@@ -23,8 +23,10 @@
 #define isWordChar(c) (isalnum(c) || (c) == '\'' || (c) == '-')
 
 int numOfNodes(Dict d);
-void bubbleSort(WFreq arr[], int n);
-void swap(WFreq *xp, WFreq *yp);
+void mergefreq(WFreq arr[], int l, int m, int r);
+void mergeSortfreq(WFreq arr[], int l, int r);
+void mergeword(WFreq arr[], int l, int m, int r);
+void mergeSortword(WFreq arr[], int l, int r);
 
 int main(int argc, char *argv[]) {
     char *fileName;  // name of file containing book text
@@ -129,28 +131,143 @@ int main(int argc, char *argv[]) {
     WFreq results[size];  // array that contains all node WFreq in wordDict
     findTopN(wordDict, results, size);
 
-    bubbleSort(results, size);
+    // bubbleSort(results, size);
+
+    // }
+
+    // merge sort
+    mergeSortword(results, 0, size - 1);
+    mergeSortfreq(results, 0, size - 1);
     for (int i = 0; i < nWords; i++) {
-        printf("%s: %d\n", results[i].word, results[i].freq);
+        printf("%7d %s\n", results[i].freq, results[i].word);
     }
     return EXIT_SUCCESS;
 }
 
-// From https://www.geeksforgeeks.org/bubble-sort/
-void bubbleSort(WFreq arr[], int n) {
-    for (int i = 0; i < n - 1; i++) {
-        // Last i elements are already in place
-        for (int j = 0; j < n - i - 1; j++) {
-            if (arr[j].freq <= arr[j + 1].freq) {
-                swap(&arr[j], &arr[j + 1]);
-            }
+
+// merge sort referenced from https://www.geeksforgeeks.org/merge-sort/
+
+void mergefreq(WFreq arr[], int l, int m, int r) {
+    int i, j, k;
+    int n1 = m - l + 1;
+    int n2 = r - m;
+
+    /* create temp arrays */
+    WFreq L[n1], R[n2];
+
+    /* Copy data to temp arrays L[] and R[] */
+    for (i = 0; i < n1; i++)
+        L[i] = arr[l + i];
+    for (j = 0; j < n2; j++)
+        R[j] = arr[m + 1 + j];
+
+    /* Merge the temp arrays back into arr[l..r]*/
+    i = 0;  // Initial index of first subarray
+    j = 0;  // Initial index of second subarray
+    k = l;  // Initial index of merged subarray
+    while (i < n1 && j < n2) {
+        if (L[i].freq > R[j].freq) {
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
         }
+        k++;
+    }
+
+    /* Copy the remaining elements of L[], if there 
+       are any */
+    while (i < n1) {
+        arr[k] = L[i];
+        i++;
+        k++;
+    }
+
+    /* Copy the remaining elements of R[], if there 
+       are any */
+    while (j < n2) {
+        arr[k] = R[j];
+        j++;
+        k++;
     }
 }
 
-// From https://www.geeksforgeeks.org/bubble-sort/
-void swap(WFreq *xp, WFreq *yp) {
-    WFreq temp = *xp;
-    *xp = *yp;
-    *yp = temp;
+/* l is for left index and r is right index of the 
+   sub-array of arr to be sorted */
+void mergeSortfreq(WFreq arr[], int l, int r) {
+    if (l < r) {
+        // Same as (l+r)/2, but avoids overflow for
+        // large l and h
+        int m = l + (r - l) / 2;
+
+        // Sort first and second halves
+        mergeSortfreq(arr, l, m);
+        mergeSortfreq(arr, m + 1, r);
+
+        mergefreq(arr, l, m, r);
+    }
+}
+
+void mergeword(WFreq arr[], int l, int m, int r) {
+    int i, j, k;
+    int n1 = m - l + 1;
+    int n2 = r - m;
+
+    /* create temp arrays */
+    WFreq L[n1], R[n2];
+
+    /* Copy data to temp arrays L[] and R[] */
+    for (i = 0; i < n1; i++)
+        L[i] = arr[l + i];
+    for (j = 0; j < n2; j++)
+        R[j] = arr[m + 1 + j];
+
+    /* Merge the temp arrays back into arr[l..r]*/
+    i = 0;  // Initial index of first subarray
+    j = 0;  // Initial index of second subarray
+    k = l;  // Initial index of merged subarray
+    while (i < n1 && j < n2) {
+        int cmp = strcmp(L[i].word, R[j].word);
+        if (cmp > 0) {
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+
+    /* Copy the remaining elements of L[], if there 
+       are any */
+    while (i < n1) {
+        arr[k] = L[i];
+        i++;
+        k++;
+    }
+
+    /* Copy the remaining elements of R[], if there 
+       are any */
+    while (j < n2) {
+        arr[k] = R[j];
+        j++;
+        k++;
+    }
+}
+
+/* l is for left index and r is right index of the 
+   sub-array of arr to be sorted */
+void mergeSortword(WFreq arr[], int l, int r) {
+    if (l < r) {
+        // Same as (l+r)/2, but avoids overflow for
+        // large l and h
+        int m = l + (r - l) / 2;
+
+        // Sort first and second halves
+        mergeSortword(arr, l, m);
+        mergeSortword(arr, m + 1, r);
+
+        mergeword(arr, l, m, r);
+    }
 }

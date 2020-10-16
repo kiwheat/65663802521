@@ -37,7 +37,7 @@ void traverseTree(Link n, WFreq *wfs, int *counter);
 
 // create new empty Dictionary
 Dict newDict() {
-    // TODO
+    // TODOmoveCastle(hv, msg, curPlayer);
     Dict d = malloc(sizeof(*d));
     d->tree = NULL;
     return d;
